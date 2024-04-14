@@ -13,10 +13,17 @@ public class SortingAggregator implements WordAggregator {
 
     @Override
     public Map<String, Long> aggregatedWords() {
+        if (wordProvider.words().isEmpty()) {
+            System.out.println("No words to aggregate... ");
+            return new HashMap<>();
+        }
+
+        // Sort words
         List<String> words = wordProvider.words();
         words.sort(Comparator.naturalOrder());
         List<Item> items = new LinkedList<>();
 
+        //... And aggregate
         String ref = words.getFirst();
         Long cnt = 0l;
 

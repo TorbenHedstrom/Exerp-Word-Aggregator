@@ -5,7 +5,6 @@ import com.exerp.aggregators.shakespeare.data.WordProvider;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -18,6 +17,11 @@ public class StreamAggregator implements WordAggregator {
 
     @Override
     public Map<String, Long> aggregatedWords() {
+        if (wordProvider.words().isEmpty()) {
+            System.out.println("No words to aggregate... ");
+            return new LinkedHashMap<>();
+        }
+
         // Aggregate words
         Map<String, Long> wordsAggregated = wordProvider
                 .words()
