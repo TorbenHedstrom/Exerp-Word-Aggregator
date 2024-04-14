@@ -1,15 +1,11 @@
 package com.exerp.aggregators.shakespeare;
 
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.exerp.aggregators.shakespeare.aggregators.SortingAggregator;
+import com.exerp.aggregators.shakespeare.aggregators.StreamAggregator;
+import com.exerp.aggregators.shakespeare.data.RegExWordProvider;
+import com.exerp.aggregators.shakespeare.data.WordProvider;
 
-import com.exerp.aggregators.shakespeare.data.FileProvider;
+import java.util.Map;
 
 public class App {
     public static void main(String[] args) {
@@ -17,27 +13,19 @@ public class App {
     }
 
     private void run() {
-        FileProvider fileProvider = new FileProvider("/tempest.txt");
-        List<String> words = null;
+        long start = System.currentTimeMillis();
 
-        try {
-            words = fileProvider.words();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        WordProvider streamWordProvider = new RegExWordProvider("/tempest.txt");
+        Map<String, Long> aggregatedWordsByStream = new StreamAggregator(streamWordProvider).aggregatedWords();
+        long timeByStream = System.currentTimeMillis() - start;
 
-        Map<String, Long> wordsAggregated = words.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        System.out.println("Words ordered with streams in: " + timeByStream + " ms. \n" + aggregatedWordsByStream.toString());
 
-        Map<String, Long> wordsOrdered = wordsAggregated
-                .entrySet()
-                .stream()
-                .sorted(Entry.comparingByValue(Comparator.reverseOrder()))
-                .limit(10)
-                .collect(Collectors.toMap(
-                        Entry::getKey,
-                        Entry::getValue,
-                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+        start = System.currentTimeMillis();
+        WordProvider sortWordProvider = new RegExWordProvider("/tempest.txt");
+        Map<String, Long> aggregatedWordsBySorting = new SortingAggregator(sortWordProvider).aggregatedWords();
+        long timeBySorting = System.currentTimeMillis() - start;
 
-        System.out.println(wordsOrdered.toString());
+        System.out.println("Words ordered with sort in: " + timeBySorting + " ms. \n" + aggregatedWordsBySorting.toString());
     }
 }
